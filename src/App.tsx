@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import ReactMarkdown from 'react-markdown';
 
 import './App.css'
@@ -11,6 +11,17 @@ const Chatbot = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const sendMessage = async (message: string) => {
     if (message.trim() === "") return;
@@ -53,7 +64,7 @@ const Chatbot = () => {
   return (
     <div className="container chatbot-container">
       <div className="row">
-        <img src="/images/avatar.png" alt="Avatar" style={{width:"300px"}} className="mx-auto mt-3"/>
+        <img src="/images/avatar.png" alt="Avatar" style={{width:"150px"}} className="mx-auto mt-3"/>
       </div>
       <div className="row">
         <h2 className="text-center">Ask me anything!</h2>
@@ -80,17 +91,18 @@ const Chatbot = () => {
           </button>
         </div>
       </div>
-      <div className="messages-container row" >
+      <div className="messages-container" >
         {messages.map((msg, idx) => (
           <div key={idx} className={"row my-1 " + msg.sender + (msg.sender == "user"? " ms-auto w-auto rounded-pill px-3 py-2 me-2" : "")}>
             {msg.sender == "user"? msg.text : <ReactMarkdown>{msg.text}</ReactMarkdown>}
           </div>
         ))}
         <div className="row" hidden={!loading}>
-        <div className="spinner-border text-secondary" role="status">
-          <span className="visually-hidden">Loading...</span>
+          <div className="spinner-border text-secondary ms-2" role="status">
+            <span className="visually-hidden">Loading.. .</span>
+          </div>
         </div>
-        </div>
+        <div ref={messagesEndRef} />
       </div>
       <div className="input-container row">
         <div className="col-10">
