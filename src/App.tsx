@@ -9,18 +9,19 @@ const Chatbot = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const sendMessage = async () => {
+    if (input.trim() === "") return; // Prevent sending empty messages
     
     const userMessage: Message = { text: input, sender: "user" };
     setMessages([...messages, userMessage]);
 
     try {
-      const response = await fetch("https://open-ai-6zol2w33u-andy-mitchells-projects-c469c246.vercel.app", {
+      const response = await fetch("https://open-ai-api-mauve.vercel.app/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          messages: messages.map((msg) => ({
+          messages: [...messages, userMessage].map((msg) => ({
             role: msg.sender === "user" ? "user" : "assistant",
             content: msg.text,
           })),
@@ -38,8 +39,17 @@ const Chatbot = () => {
     setInput("");
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      sendMessage();
+    }
+  };
+
   return (
     <div className="container chatbot-container">
+      <div className="row">
+      <img src="/images/avatar.png" alt="Avatar" style={{width:"300px"}} className="mx-auto mt-5"/>
+      </div>
       <div className="messages-container row" >
         {messages.map((msg, idx) => (
           <div key={idx} className={"row my-1 " + msg.sender + (msg.sender == "user"? " ms-auto w-auto rounded-pill px-3 py-2 me-2" : "")}>
@@ -53,6 +63,7 @@ const Chatbot = () => {
             value={input}
             className="mx-2 p-1 form-control"
             onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
             placeholder="Type a message"
           />
         </div>
