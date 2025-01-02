@@ -1,5 +1,5 @@
 import { useState } from "react";
-
+import './App.css'
 interface Message {
   text: string;
   sender: string;
@@ -10,7 +10,6 @@ const Chatbot = () => {
   const [input, setInput] = useState("");
   const sendMessage = async () => {
     
-    console.log("got here\n")
     const userMessage: Message = { text: input, sender: "user" };
     setMessages([...messages, userMessage]);
 
@@ -30,7 +29,7 @@ const Chatbot = () => {
       
       const data = await response.json();
       console.log(data);
-      const botMessage: Message = { text: data.reply.content, sender: "bot" }; // Adjust this to match your API response structure
+      const botMessage: Message = { text: data.reply.content, sender: "assistant" }; 
       setMessages((prev) => [...prev, botMessage]);
     } catch (error) {
       console.error("Error calling the API:", error);
@@ -40,20 +39,27 @@ const Chatbot = () => {
   };
 
   return (
-    <div>
-      <div className="chat-window">
+    <div className="container chatbot-container">
+      <div className="messages-container row" >
         {messages.map((msg, idx) => (
-          <p key={idx} className={msg.sender}>
+          <div key={idx} className={"row my-1 " + msg.sender + (msg.sender == "user"? " ms-auto w-auto rounded-pill px-3 py-2 me-2" : "")}>
             {msg.text}
-          </p>
+          </div>
         ))}
       </div>
-      <input
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        placeholder="Type a message"
-      />
-      <button onClick={sendMessage}>Send</button>
+      <div className="input-container row">
+        <div className="col-10">
+          <input
+            value={input}
+            className="mx-2 p-1 form-control"
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Type a message"
+          />
+        </div>
+        <div className="col-2">
+          <button className="btn btn-primary" onClick={sendMessage}>Send</button></div>
+        </div>
+    
     </div>
   );
 };
