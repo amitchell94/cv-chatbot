@@ -1,4 +1,6 @@
 import { useState } from "react";
+import ReactMarkdown from 'react-markdown';
+
 import './App.css'
 interface Message {
   text: string;
@@ -53,7 +55,7 @@ const Chatbot = () => {
       <div className="messages-container row" >
         {messages.map((msg, idx) => (
           <div key={idx} className={"row my-1 " + msg.sender + (msg.sender == "user"? " ms-auto w-auto rounded-pill px-3 py-2 me-2" : "")}>
-            {msg.text}
+            {msg.sender == "user"? msg.text : <ReactMarkdown>{msg.text}</ReactMarkdown>}
           </div>
         ))}
       </div>
