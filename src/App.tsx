@@ -12,6 +12,7 @@ const Chatbot = () => {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const N8N_WEBHOOK_URL = import.meta.env.VITE_REACT_APP_N8N_WEBHOOK_URL;
 
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
@@ -27,29 +28,49 @@ const Chatbot = () => {
     if (message.trim() === "") return;
     
     const userMessage: Message = { text: message, sender: "user" };
-    setMessages([...messages, userMessage]);
+    setMessages(prevMessages => [...prevMessages, userMessage]);
 
     setLoading(true);
     try {
-      const response = await fetch("https://open-ai-api-mauve.vercel.app/", {
+      const payload = {
+        messages: [...messages, userMessage].map((msg) => ({
+          role: msg.sender === "user" ? "user" : "assistant",
+          content: msg.text,
+        })),
+      };
+      
+      const response = await fetch(N8N_WEBHOOK_URL, { 
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          messages: [...messages, userMessage].map((msg) => ({
-            role: msg.sender === "user" ? "user" : "assistant",
-            content: msg.text,
-          })),
-        }),
+        body: JSON.stringify(payload),
       });
       
+      if (!response.ok) {
+        const errorData = await response.json(); // Or response.text() if not JSON
+        console.error("Error from n8n API:", response.status, errorData);
+        const botMessage: Message = { text: `Error: ${errorData.message || 'Failed to get response from agent.'}`, sender: "assistant" };
+        setMessages((prev) => [...prev, botMessage]);
+        setLoading(false);
+        setInput("");
+        return;
+      }
+
       const data = await response.json();
-      console.log(data);
-      const botMessage: Message = { text: data.reply.content, sender: "assistant" }; 
-      setMessages((prev) => [...prev, botMessage]);
+      console.log("Data from n8n:", data);
+      if (data.output) {
+        const botMessage: Message = { text: data.output, sender: "assistant" }; 
+        setMessages((prev) => [...prev, botMessage]);
+      } else {
+        console.error("Unexpected response structure from n8n:", data);
+        const botMessage: Message = { text: "Sorry, I received an unexpected response.", sender: "assistant" };
+        setMessages((prev) => [...prev, botMessage]);
+      }
     } catch (error) {
-      console.error("Error calling the API:", error);
+      console.error("Error calling the n8n API:", error);
+      const botMessage: Message = { text: "Sorry, something went wrong while connecting to the agent.", sender: "assistant" };
+      setMessages((prev) => [...prev, botMessage]);
     }
     setLoading(false);
     setInput("");
@@ -93,8 +114,8 @@ const Chatbot = () => {
       </div>
       <div className="messages-container" >
         {messages.map((msg, idx) => (
-          <div key={idx} className={"row my-1 " + msg.sender + (msg.sender == "user"? " ms-auto w-auto rounded-pill px-3 py-2 me-2" : "")}>
-            {msg.sender == "user"? msg.text : <ReactMarkdown>{msg.text}</ReactMarkdown>}
+          <div key={idx} className={"row my-1 " + msg.sender + (msg.sender === "user"? " ms-auto w-auto rounded-pill px-3 py-2 me-2" : " w-auto rounded-pill bg-light px-3 py-2 ms-2")}>
+            {msg.sender === "user"? msg.text : <ReactMarkdown>{msg.text}</ReactMarkdown>}
           </div>
         ))}
         <div className="row" hidden={!loading}>
