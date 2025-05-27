@@ -12,10 +12,10 @@ const ALL_PRESET_QUESTIONS = [
   "What code bases is Andy familiar with?",
   "What are Andy's key technical skills?",
   "Tell me about a challenging project Andy worked on.",
-  "WHat subjects did Andy study at grad school?",
+  "What subjects did Andy study at grad school?",
   "What are Andy's hobbies outside of work?",
-  "What was Anfy's Master's thesis?",
-  "Where did Andy grow up?",
+  "What was Andy's Master's thesis?",
+  "What languages does Andy speak?",
   "Describe Andy's experience with programming",
 ];
 
@@ -137,7 +137,7 @@ const Chatbot = () => {
       </div>
       <div className="messages-container" >
         {messages.map((msg, idx) => (
-          <div key={idx} className={"row my-1 " + msg.sender + (msg.sender === "user"? " ms-auto w-auto rounded-pill px-3 py-2 me-2" : " w-auto rounded-pill bg-light px-3 py-2 ms-2")}>
+          <div key={idx} className={"row my-1 " + msg.sender + (msg.sender === "user"? " ms-auto w-auto rounded-pill px-3 py-2 me-2" : " w-auto rounded-pill bg-light px-3 py-2 ms-2 me-0")}>
             {msg.sender === "user"? msg.text : <ReactMarkdown>{msg.text}</ReactMarkdown>}
           </div>
         ))}
