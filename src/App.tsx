@@ -6,6 +6,18 @@ interface Message {
   text: string;
   sender: string;
 }
+const ALL_PRESET_QUESTIONS = [
+  "Where did Andy go to school?",
+  "What was Andy's first job?",
+  "What code bases is Andy familiar with?",
+  "What are Andy's key technical skills?",
+  "Tell me about a challenging project Andy worked on.",
+  "WHat subjects did Andy study at grad school?",
+  "What are Andy's hobbies outside of work?",
+  "What was Anfy's Master's thesis?",
+  "Where did Andy grow up?",
+  "Describe Andy's experience with programming",
+];
 
 const Chatbot = () => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -13,6 +25,10 @@ const Chatbot = () => {
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const N8N_WEBHOOK_URL = import.meta.env.VITE_REACT_APP_N8N_WEBHOOK_URL;
+  const [displayedPresetQuestions, setDisplayedPresetQuestions] = useState<string[]>(
+    ALL_PRESET_QUESTIONS.slice(0, 3)
+  );
+  const [nextPresetQuestionIndex, setNextPresetQuestionIndex] = useState(3);
 
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
@@ -29,6 +45,7 @@ const Chatbot = () => {
     
     const userMessage: Message = { text: message, sender: "user" };
     setMessages(prevMessages => [...prevMessages, userMessage]);
+    setInput("");
 
     setLoading(true);
     try {
@@ -48,12 +65,11 @@ const Chatbot = () => {
       });
       
       if (!response.ok) {
-        const errorData = await response.json(); // Or response.text() if not JSON
+        const errorData = await response.json();
         console.error("Error from n8n API:", response.status, errorData);
         const botMessage: Message = { text: `Error: ${errorData.message || 'Failed to get response from agent.'}`, sender: "assistant" };
         setMessages((prev) => [...prev, botMessage]);
         setLoading(false);
-        setInput("");
         return;
       }
 
@@ -73,7 +89,20 @@ const Chatbot = () => {
       setMessages((prev) => [...prev, botMessage]);
     }
     setLoading(false);
-    setInput("");
+  };
+
+  const handlePresetQuestionClick = (question: string, buttonIndex: number) => {
+    sendMessage(question); 
+
+    // Update the clicked button with the next question from the list
+    setDisplayedPresetQuestions(prevDisplayedQuestions => {
+      const newDisplayedQuestions = [...prevDisplayedQuestions];
+      // Get the next question, cycling through ALL_PRESET_QUESTIONS
+      const nextQuestion = ALL_PRESET_QUESTIONS[nextPresetQuestionIndex % ALL_PRESET_QUESTIONS.length];
+      newDisplayedQuestions[buttonIndex] = nextQuestion;
+      return newDisplayedQuestions;
+    });
+    setNextPresetQuestionIndex(prevIndex => prevIndex + 1);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -90,26 +119,20 @@ const Chatbot = () => {
       <div className="row">
         <h2 className="text-center">Ask me anything!</h2>
       </div>
-      <div className="row">
-        <div className="d-flex justify-content-center">
-          <button
-            className="btn btn-outline-primary mx-2"
-            onClick={() => sendMessage("Where did Andy go to school?")}
-          >
-            Where did Andy go to school?
-          </button>
-          <button
-            className="btn btn-outline-primary mx-2"
-            onClick={() => sendMessage("What was Andy's first job?")}
-          >
-            What was Andy's first job?
-          </button>
-          <button
-            className="btn btn-outline-primary mx-2"
-            onClick={() => sendMessage("What code bases is Andy familiar with?")}
-          >
-            What code bases is Andy familiar with?
-          </button>
+      <div className="row mb-3"> 
+        <div className="d-flex justify-content-center flex-wrap">
+          {displayedPresetQuestions.map((question, index) => (
+            question && ( 
+              <button
+                key={`${question}-${index}`}
+                className="btn btn-outline-primary mx-1 my-1"
+                onClick={() => handlePresetQuestionClick(question, index)}
+                style={{minWidth: '180px'}}
+              >
+                {question}
+              </button>
+            )
+          ))}
         </div>
       </div>
       <div className="messages-container" >
@@ -120,7 +143,7 @@ const Chatbot = () => {
         ))}
         <div className="row" hidden={!loading}>
           <div className="spinner-border text-secondary ms-2" role="status">
-            <span className="visually-hidden">Loading.. .</span>
+            <span className="visually-hidden">Loading...</span>
           </div>
         </div>
         <div ref={messagesEndRef} />
@@ -133,12 +156,19 @@ const Chatbot = () => {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Type a message"
+            disabled={loading}
           />
         </div>
         <div className="col-2">
-          <button className="btn btn-primary" onClick={() => sendMessage(input)}>Send</button></div>
+          <button 
+            className="btn btn-primary" 
+            onClick={() => sendMessage(input)}
+            disabled={loading || input.trim() === ""}
+          >
+            Send
+          </button>
         </div>
-    
+      </div>
     </div>
   );
 };
