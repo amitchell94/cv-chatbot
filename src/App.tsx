@@ -60,32 +60,16 @@ const Chatbot = () => {
           })),
         }),
       });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Error from n8n API:", response.status, errorData);
-        const botMessage: Message = { text: `Error: ${errorData.message || 'Failed to get response from agent.'}`, sender: "assistant" };
-        setMessages((prev) => [...prev, botMessage]);
-        setLoading(false);
-        return;
-      }
 
       const data = await response.json();
-      console.log("Data from n8n:", data);
-      if (data.output) {
-        const botMessage: Message = { text: data.output, sender: "assistant" }; 
-        setMessages((prev) => [...prev, botMessage]);
-      } else {
-        console.error("Unexpected response structure from n8n:", data);
-        const botMessage: Message = { text: "Sorry, I received an unexpected response.", sender: "assistant" };
-        setMessages((prev) => [...prev, botMessage]);
-      }
-    } catch (error) {
-      console.error("Error calling the n8n API:", error);
-      const botMessage: Message = { text: "Sorry, something went wrong while connecting to the agent.", sender: "assistant" };
+      console.log(data);
+      const botMessage: Message = { text: data.reply.content, sender: "assistant" }; 
       setMessages((prev) => [...prev, botMessage]);
+    } catch (error) {
+      console.error("Error calling the API:", error);
     }
     setLoading(false);
+    setInput("");
   };
 
   const handlePresetQuestionClick = (question: string, buttonIndex: number) => {
