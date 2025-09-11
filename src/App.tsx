@@ -24,7 +24,6 @@ const Chatbot = () => {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const N8N_WEBHOOK_URL = import.meta.env.VITE_REACT_APP_N8N_WEBHOOK_URL;
   const [displayedPresetQuestions, setDisplayedPresetQuestions] = useState<string[]>(
     ALL_PRESET_QUESTIONS.slice(0, 3)
   );
@@ -44,24 +43,22 @@ const Chatbot = () => {
     if (message.trim() === "") return;
     
     const userMessage: Message = { text: message, sender: "user" };
-    setMessages(prevMessages => [...prevMessages, userMessage]);
+    setMessages([...messages, userMessage]);
     setInput("");
 
     setLoading(true);
     try {
-      const payload = {
-        messages: [...messages, userMessage].map((msg) => ({
-          role: msg.sender === "user" ? "user" : "assistant",
-          content: msg.text,
-        })),
-      };
-      
-      const response = await fetch(N8N_WEBHOOK_URL, { 
+      const response = await fetch("https://open-ai-api-mauve.vercel.app/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          messages: [...messages, userMessage].map((msg) => ({
+            role: msg.sender === "user" ? "user" : "assistant",
+            content: msg.text,
+          })),
+        }),
       });
       
       if (!response.ok) {
