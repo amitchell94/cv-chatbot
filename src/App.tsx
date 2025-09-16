@@ -118,7 +118,7 @@ const Chatbot = () => {
       </div>
       <div className="messages-container" >
         {messages.map((msg, idx) => (
-          <div key={idx} className={"row my-1 " + msg.sender + (msg.sender === "user"? " ms-auto w-auto rounded-pill px-3 py-2 me-2" : " w-auto rounded-pill bg-light px-3 py-2 ms-2 me-0")}>
+          <div key={idx} className={"row my-1 " + msg.sender + (msg.sender === "user"? " ms-auto w-auto rounded-pill px-3 py-2 me-2" : " w-auto px-3 py-2 ms-2 me-0")}>
             {msg.sender === "user"? msg.text : <ReactMarkdown>{msg.text}</ReactMarkdown>}
           </div>
         ))}
