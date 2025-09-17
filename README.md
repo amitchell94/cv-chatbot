@@ -1,11 +1,11 @@
 # Resume Chatbot
 
-This repository contains the code for a React-based chatbot interface. This chatbot is designed to answer questions about me by sending user queries to a backend service (n8n webhook) and displaying the conversation.
+This repository contains the code for a React-based chatbot interface. This chatbot is designed to answer questions about me by sending user queries to a backend API service and displaying the conversation.
 
 ## Features
 
 * **Interactive Chat Interface:** Allows users to type messages and receive responses.
-* **Backend Integration:** Communicates with an n8n webhook to process user messages and fetch answers.
+* **Backend Integration:** Communicates with a backend API service to process user messages and fetch answers.
 * **Conversation History:** Displays the ongoing conversation between the user and the chatbot.
 * **Preset Questions:** Offers a rotating selection of predefined questions to start the conversation. Clicking a preset question sends it to the chatbot and replaces it with a new question from a larger list.
 * **Loading Indicator:** Shows a spinner while waiting for a response from the backend.
@@ -21,7 +21,7 @@ This repository contains the code for a React-based chatbot interface. This chat
 * **ReactMarkdown:** A React component to render Markdown.
 * **CSS:** For styling the component .
 * **Vite:**  A fast frontend build tool.
-* **n8n.io (Backend):** The chatbot logic and data retrieval are handled by an n8n workflow, which is accessed via a webhook URL.
+* **Backend API:** The chatbot logic and data retrieval are handled by a custom backend API service.
 
 ## Setup and Installation
 
@@ -38,12 +38,8 @@ This repository contains the code for a React-based chatbot interface. This chat
     yarn install
     ```
 
-3.  **Set up environment variables:**
-    Create a `.env` file in the root of your project and add your n8n webhook URL:
-    ```env
-    VITE_REACT_APP_N8N_WEBHOOK_URL=your_n8n_webhook_url_here
-    ```
-    Replace `your_n8n_webhook_url_here` with the actual webhook URL provided by your n8n workflow.
+3.  **Backend API Configuration:**
+    The application is configured to use a backend API service. The API endpoint is currently hardcoded in the application. If you need to change the backend API URL, you can modify it in the `src/App.tsx` file.
 
 4.  **Run the development server:**
     ```bash
@@ -64,15 +60,17 @@ This repository contains the code for a React-based chatbot interface. This chat
 7.  The chatbot's response will appear in the chat window. User messages are aligned to the right, and bot messages (which can include Markdown formatting) are aligned to the left.
 8.  The chat window will automatically scroll to show the latest messages.
 
-## Backend (n8n)
+## Backend API
 
-This frontend chatbot component relies on a backend n8n workflow. The n8n workflow is responsible for:
+This frontend chatbot component relies on a backend API service. The backend is hosted in a separate repository: [amitchell94/openai-api](https://github.com/amitchell94/openai-api).
 
-* Receiving the user's message (and conversation history) via a webhook.
-* Processing the message (likely using an LLM or other AI model, and a knowledge base about "Andy").
+The backend API is responsible for:
+
+* Receiving the user's message (and conversation history) via HTTP POST requests.
+* Processing the message (using an LLM or other AI model, and a knowledge base about "Andy").
 * Returning a response to be displayed by the chatbot.
 
-Ensure your n8n workflow is active and correctly configured to handle requests from this chatbot. The payload sent to the n8n webhook has the following structure:
+The payload sent to the backend API has the following structure:
 
 ```json
 {
